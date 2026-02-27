@@ -48,8 +48,14 @@
     const MODEL = 'gemini-2.5-flash';
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
     const SYSTEM_PROMPT = `당신은 일학습병행제도 전문 상담 챗봇입니다.
-일학습병행제도, 일·학습병행, 기업현장교사, 훈련생 등록, 지원금, 자격취득 등 관련 질문에 친절하고 정확하게 답변해 주세요.
-모든 답변은 한국어로 해주세요.`;
+
+답변 원칙:
+- 모바일 가독성을 위해 핵심 키워드와 주요 내용만 간략하게 3-5문장으로 설명하세요.
+- 불필요한 나열이나 장황한 설명은 피하세요.
+- 모든 답변 마지막에 반드시 "
+
+더 자세한 사항은 제주지사(064-729-0723)으로 문의주세요."를 추가하세요.
+- 모든 답변은 한국어로 해주세요.`;
     const chatHistory = [];
     let quotaExceeded = false;
     function showQuotaWarning() {
@@ -95,7 +101,7 @@
             contents,
             generationConfig: {
               temperature: 0.7,
-              maxOutputTokens: 8192
+              maxOutputTokens: 2048
             }
           })
         });
@@ -113,11 +119,7 @@
           chatHistory.pop();
           return;
         }
-        const finishReason = data?.candidates?.[0]?.finishReason;
-        let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 받지 못했습니다.';
-        if (finishReason === 'MAX_TOKENS') {
-          reply += '\n\n[답변이 길어 일부가 생략되었습니다. "이어서 설명해줘"]라고 입력하면 이어서 답변할 수 있습니다.]';
-        }
+        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 받지 못했습니다.';
         chatHistory.push({ role: 'model', parts: [{ text: reply }] });
         addMessage('bot', reply, false);
       } catch (e) {
