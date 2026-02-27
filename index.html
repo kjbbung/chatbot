@@ -35,7 +35,7 @@
 
         // --- CONFIGURATION ---
         const GEMINI_API_KEY = "AIzaSyAgchrzk7ywmQtiD4tJwcKQdsOirLTyftQ";
-        
+
         // --- IMAGE CONFIGURATION ---
         const getSafeImageUrl = (name) => {
             if (!name) return "";
@@ -43,12 +43,11 @@
             return "./" + encodeURIComponent(name);
         };
 
-        const BOT_PROFILE_IMAGE = getSafeImageUrl("이루미&해넘이(기본형).jpg");
+        const BOT_PROFILE_IMAGE = getSafeImageUrl("이루미&해냄이(기본형).jpg");
         const HEADER_LOGO_IMAGE = getSafeImageUrl("제주지사_귤.jpg");
         const RANDOM_IMAGES = [
-            "감사합니다.jpg", "열공학습.jpg", "열일1.jpg", "열일2.jpg", 
-            "이루미(기본형).jpg", "최고.jpg", "취업성공.jpg", "파이팅.jpg", 
-            "학습.jpg", "해넘이(기본형).jpg"
+            "감사합니다.jpg", "열공학습.jpg", "열일1.jpg", "열일2.jpg", "이루미(기본형).jpg",
+            "최고.jpg", "취업성공.jpg", "파이팅.jpg", "학습.jpg", "해냄이(기본형).jpg"
         ].map(getSafeImageUrl);
 
         const SYSTEM_INSTRUCTION = `
@@ -83,16 +82,26 @@
             const chatEndRef = useRef(null);
             const chatContainerRef = useRef(null);
 
-            const scrollToBottom = () => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); };
-            const handleReset = () => { setMessages([]); setInput(''); setIsLoading(false); };
-            useEffect(() => { scrollToBottom(); }, [messages]);
+            const scrollToBottom = () => {
+                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            };
+
+            const handleReset = () => {
+                setMessages([]);
+                setInput('');
+                setIsLoading(false);
+            };
+
+            useEffect(() => {
+                scrollToBottom();
+            }, [messages]);
 
             const handleSend = async (text = input) => {
                 if (!text.trim() || isLoading) return;
-                
+
                 const userMessage = { role: 'user', content: text };
                 const randomImg = RANDOM_IMAGES[Math.floor(Math.random() * RANDOM_IMAGES.length)];
-                
+
                 setMessages(prev => [...prev, userMessage]);
                 setInput('');
                 setIsLoading(true);
@@ -100,11 +109,9 @@
                 try {
                     const ai = new GoogleGenAI(GEMINI_API_KEY);
                     const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
-                    
-                    const result = await model.generateContent({
-                        contents: [{ role: 'user', parts: [{ text: SYSTEM_INSTRUCTION + "
 
-사용자 질문: " + text }] }]
+                    const result = await model.generateContent({
+                        contents: [{ role: 'user', parts: [{ text: SYSTEM_INSTRUCTION + " 사용자 질문: " + text }] }]
                     });
 
                     const fullResponse = result.response.text();
@@ -128,9 +135,9 @@
                                     "일학습병행 전문 상담 챗봇",
                                     React.createElement(Sparkles, { className: "w-6 h-6 text-blue-600" })
                                 ),
-                                React.createElement('p', { className: "text-gray-600 text-sm md:text-base" }, "법·운영규정·최신 운영매뉴얼 기반으로 기업·학습근로자 질문에 답합니다.")
+                                React.createElement('p', { className: "text-gray-600 text-sm md:text-base" },
+                                    "법·운영규정·최신 운영매뉴얼 기반으로 기업·학습근로자 질문에 답합니다.")
                             ),
-                            // Header Logo in Top Right
                             React.createElement('div', { className: "flex justify-end" },
                                 React.createElement('div', { className: "w-16 h-16 md:w-20 md:h-20 bg-white rounded-xl shadow-sm border border-gray-100 p-1 flex items-center justify-center overflow-hidden" },
                                     React.createElement('img', { src: HEADER_LOGO_IMAGE, className: "max-w-full max-h-full object-contain", alt: "Logo" })
@@ -141,7 +148,8 @@
                     React.createElement('section', { className: "bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-gray-200 flex flex-col gap-4" },
                         React.createElement('div', null,
                             React.createElement('h2', { className: "text-sm font-bold text-gray-900 mb-2 flex items-center gap-1.5" },
-                                React.createElement(Info, { className: "w-4 h-4 text-blue-500" }), "이 챗봇은 다음 자료를 기반으로 답변합니다."
+                                React.createElement(Info, { className: "w-4 h-4 text-blue-500" }),
+                                "이 챗봇은 다음 자료를 기반으로 답변합니다."
                             ),
                             React.createElement('ul', { className: "text-sm text-gray-700 space-y-1 list-disc pl-5" },
                                 React.createElement('li', null, "「산업현장에서의 일학습병행 지원에 관한 법률」 및 시행령·시행규칙"),
@@ -159,7 +167,8 @@
                             ),
                             React.createElement('div', null,
                                 React.createElement('h3', { className: "text-xs font-bold text-gray-500 uppercase tracking-wider mb-2" }, "문의 가능 내용"),
-                                React.createElement('p', { className: "text-sm text-gray-700 leading-relaxed" }, "제도 개요, 참여요건, 훈련 설계(OJT/Off-JT), 비용·지원금(최신 단가 기준), HRD-Net 절차 등")
+                                React.createElement('p', { className: "text-sm text-gray-700 leading-relaxed" },
+                                    "제도 개요, 참여요건, 훈련 설계(OJT/Off-JT), 비용·지원금(최신 단가 기준), HRD-Net 절차 등")
                             )
                         ),
                         React.createElement('div', { className: "pt-2 border-t border-gray-100" },
@@ -186,66 +195,74 @@
                             )
                         ),
                         React.createElement('div', { ref: chatContainerRef, className: "flex-1 overflow-y-auto p-6 space-y-6 bg-white" },
-                            messages.length === 0 ? React.createElement('div', { className: "flex flex-col gap-6 h-full justify-center items-center text-center max-w-md mx-auto" },
-                                React.createElement('div', { className: "space-y-2" },
-                                    React.createElement('p', { className: "text-sm text-gray-500 font-medium" }, "예시 질문을 선택하거나 직접 질문을 작성해 보세요.")
-                                ),
-                                React.createElement('div', { className: "grid grid-cols-1 gap-3 w-full" },
-                                    EXAMPLE_QUESTIONS.map((q, idx) => React.createElement('button', {
-                                        key: idx,
-                                        onClick: () => handleSend(q.text),
-                                        className: "text-left p-4 rounded-xl border border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50 transition-all group shadow-sm"
-                                    },
-                                        React.createElement('div', { className: "flex items-center justify-between mb-1" },
-                                            React.createElement('span', { className: "text-[10px] font-bold text-blue-600 uppercase tracking-wider" }, q.category),
-                                            React.createElement(ChevronRight, { className: "w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-colors" })
-                                        ),
-                                        React.createElement('p', { className: "text-sm text-gray-800 font-medium leading-snug" }, q.text)
-                                    ))
-                                )
-                            ) : React.createElement(AnimatePresence, { initial: false },
-                                messages.map((m, idx) => React.createElement(motion.div, {
-                                    key: idx,
-                                    initial: { opacity: 0, y: 10 },
-                                    animate: { opacity: 1, y: 0 },
-                                    className: `flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`
-                                },
-                                    React.createElement('div', { className: `flex gap-3 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}` },
-                                        React.createElement('div', { className: `w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm overflow-hidden ${m.role === 'user' ? 'bg-gray-800 text-white' : 'bg-white border border-gray-200'}` },
-                                            m.role === 'user' ? React.createElement(User, { className: "w-5 h-5" }) : React.createElement('img', { src: m.image || BOT_PROFILE_IMAGE, className: "w-full h-full object-cover" })
-                                        ),
-                                        React.createElement('div', { className: `p-4 rounded-2xl shadow-sm ${m.role === 'user' ? 'bg-gray-800 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none'}` },
-                                            React.createElement('div', { className: "markdown-body" },
-                                                React.createElement(Markdown, null, m.content)
+                            messages.length === 0 ? (
+                                React.createElement('div', { className: "flex flex-col gap-6 h-full justify-center items-center text-center max-w-md mx-auto" },
+                                    React.createElement('div', { className: "space-y-2" },
+                                        React.createElement('p', { className: "text-sm text-gray-500 font-medium" }, "예시 질문을 선택하거나 직접 질문을 작성해 보세요.")
+                                    ),
+                                    React.createElement('div', { className: "grid grid-cols-1 gap-3 w-full" },
+                                        EXAMPLE_QUESTIONS.map((q, idx) =>
+                                            React.createElement('button', {
+                                                key: idx,
+                                                onClick: () => handleSend(q.text),
+                                                className: "text-left p-4 rounded-xl border border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50 transition-all group shadow-sm"
+                                            },
+                                                React.createElement('div', { className: "flex items-center justify-between mb-1" },
+                                                    React.createElement('span', { className: "text-[10px] font-bold text-blue-600 uppercase tracking-wider" }, q.category),
+                                                    React.createElement(ChevronRight, { className: "w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-colors" })
+                                                ),
+                                                React.createElement('p', { className: "text-sm text-gray-800 font-medium leading-snug" }, q.text)
                                             )
                                         )
-                                    ),
-                                    m.role === 'model' && idx === messages.length - 1 && !isLoading && React.createElement(motion.div, {
-                                        initial: { opacity: 0 },
-                                        animate: { opacity: 1 },
-                                        className: "mt-4 ml-11"
-                                    },
-                                        React.createElement('button', {
-                                            onClick: handleReset,
-                                            className: "flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full hover:bg-blue-100 transition-all shadow-sm"
+                                    )
+                                )
+                            ) : (
+                                React.createElement(AnimatePresence, { initial: false },
+                                    messages.map((m, idx) =>
+                                        React.createElement(motion.div, {
+                                            key: idx,
+                                            initial: { opacity: 0, y: 10 },
+                                            animate: { opacity: 1, y: 0 },
+                                            className: `flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`
                                         },
-                                            React.createElement(RotateCcw, { className: "w-3.5 h-3.5" }),
-                                            React.createElement('span', null, "처음으로 돌아가기")
+                                            React.createElement('div', { className: `flex gap-3 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}` },
+                                                React.createElement('div', { className: `w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm overflow-hidden ${m.role === 'user' ? 'bg-gray-800 text-white' : 'bg-white border border-gray-200'}` },
+                                                    m.role === 'user' ? React.createElement(User, { className: "w-5 h-5" }) : React.createElement('img', { src: m.image || BOT_PROFILE_IMAGE, className: "w-full h-full object-cover" })
+                                                ),
+                                                React.createElement('div', { className: `p-4 rounded-2xl shadow-sm ${m.role === 'user' ? 'bg-gray-800 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none'}` },
+                                                    React.createElement('div', { className: "markdown-body" },
+                                                        React.createElement(Markdown, null, m.content)
+                                                    )
+                                                )
+                                            ),
+                                            m.role === 'model' && idx === messages.length - 1 && !isLoading && (
+                                                React.createElement(motion.div, { initial: { opacity: 0 }, animate: { opacity: 1 }, className: "mt-4 ml-11" },
+                                                    React.createElement('button', {
+                                                        onClick: handleReset,
+                                                        className: "flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full hover:bg-blue-100 transition-all shadow-sm"
+                                                    },
+                                                        React.createElement(RotateCcw, { className: "w-3.5 h-3.5" }),
+                                                        React.createElement('span', null, "처음으로 돌아가기")
+                                                    )
+                                                )
+                                            )
                                         )
                                     )
-                                ))
+                                )
                             )
                         ),
-                        isLoading && React.createElement('div', { className: "flex justify-start px-6 py-2" },
-                            React.createElement('div', { className: "flex gap-3" },
-                                React.createElement('div', { className: "w-8 h-8 rounded-full overflow-hidden shadow-sm border border-gray-200 bg-white" },
-                                    React.createElement('img', { src: BOT_PROFILE_IMAGE, className: "w-full h-full object-cover" })
-                                ),
-                                React.createElement('div', { className: "p-4 bg-white border border-gray-100 rounded-2xl rounded-tl-none shadow-sm" },
-                                    React.createElement('div', { className: "flex gap-1" },
-                                        React.createElement('span', { className: "w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce", style: { animationDelay: '0ms' } }),
-                                        React.createElement('span', { className: "w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce", style: { animationDelay: '150ms' } }),
-                                        React.createElement('span', { className: "w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce", style: { animationDelay: '300ms' } })
+                        isLoading && (
+                            React.createElement('div', { className: "flex justify-start px-6 py-2" },
+                                React.createElement('div', { className: "flex gap-3" },
+                                    React.createElement('div', { className: "w-8 h-8 rounded-full overflow-hidden shadow-sm border border-gray-200 bg-white" },
+                                        React.createElement('img', { src: BOT_PROFILE_IMAGE, className: "w-full h-full object-cover" })
+                                    ),
+                                    React.createElement('div', { className: "p-4 bg-white border border-gray-100 rounded-2xl rounded-tl-none shadow-sm" },
+                                        React.createElement('div', { className: "flex gap-1" },
+                                            React.createElement('span', { className: "w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce", style: { animationDelay: '0ms' } }),
+                                            React.createElement('span', { className: "w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce", style: { animationDelay: '150ms' } }),
+                                            React.createElement('span', { className: "w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce", style: { animationDelay: '300ms' } })
+                                        )
                                     )
                                 )
                             )
@@ -274,13 +291,15 @@
                             ),
                             React.createElement('div', { className: "flex items-center gap-2 px-2" },
                                 React.createElement(MessageSquare, { className: "w-3 h-3 text-gray-400" }),
-                                React.createElement('p', { className: "text-[10px] text-gray-400" }, "개인정보(주민등록번호 등)는 입력하지 마세요. AI 답변은 참고용이며 최종 확인은 한국산업인력공단 제주지사(064-729-0723)를 통해 진행해 주세요.")
+                                React.createElement('p', { className: "text-[10px] text-gray-400" },
+                                    "개인정보(주민등록번호 등)는 입력하지 마세요. AI 답변은 참고용이며 최종 확인은 한국산업인력공단 제주지사(064-729-0723)를 통해 진행해 주세요.")
                             )
                         )
                     )
                 )
             );
         }
+
         const root = createRoot(document.getElementById('root'));
         root.render(React.createElement(App));
     </script>
