@@ -87,8 +87,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            system_instruction: SYSTEM_PROMPT,
-            contents: conversationHistory
+        systemInstruction: SYSTEM_PROMPT,            contents: conversationHistory
           })
         });
 
