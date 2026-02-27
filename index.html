@@ -166,38 +166,32 @@
                 setIsLoading(true);
 
                 try {
-            const ai = new GoogleGenAI({ apiKey: currentKey });
+                    const ai = new GoogleGenAI(currentKey);
+                    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" }); // Using 1.5-flash for broader compatibility in standalone
+                    
+                    const chat = model.startChat({
+                        history: messages.map(m => ({
+                            role: m.role === 'user' ? 'user' : 'model',
+                            parts: [{ text: m.content }]
+                        })),
+                        generationConfig: {
+                            maxOutputTokens: 2048,
+                        },
+                    });
 
-            // Build conversation history with system instruction
-            const contents = [
-                { role: 'user', parts: [{ text: SYSTEM_INSTRUCTION }] },
-                { role: 'model', parts: [{ text: '네, 일학습병행 전문 상담 챗봇입니다. 무엇을 도와드릴까요?' }] }
-            ];
+                    // Note: Standalone version uses standard sendMessage for simplicity or sendMessageStream
+                    // To match the "one-time" requirement:
+                    const result = await model.generateContent({
+                        contents: [
+                            { role: 'user', parts: [{ text: SYSTEM_INSTRUCTION + "\n\n사용자 질문: " + text }] }
+                        ]
+                    });
+                    
+                    const fullResponse = result.response.text();
 
-            // Add previous messages to history
-            messages.forEach(m => {
-                contents.push({
-                    role: m.role === 'user' ? 'user' : 'model',
-                    parts: [{ text: m.content }]
-                });
-            });
-
-            // Add current user message
-            contents.push({
-                role: 'user',
-                parts: [{ text: text }]
-            });
-
-            // Call API with full conversation history
-            const result = await ai.models.generateContent({
-                model: 'gemini-1.5-flash',
-                contents: contents
-            });
-
-            const fullResponse = result.text;
-            if (fullResponse) {
-                setMessages(prev => [...prev, { role: 'model', content: fullResponse }]);
-            
+                    if (fullResponse) {
+                        setMessages(prev => [...prev, { role: 'model', content: fullResponse }]);
+                    }
                 } catch (error) {
                     console.error("Chat error:", error);
                     setMessages(prev => [...prev, { 
