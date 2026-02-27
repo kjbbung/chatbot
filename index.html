@@ -45,7 +45,7 @@
   </div>
   <script>
     const API_KEY = 'AIzaSyAxXVR-9-ei7VWzczoG5WONgZGFvkLQSgU';
-    const MODEL = 'gemini-1.5-flash';
+    const MODEL = 'gemini-1.5-flash-002';
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
     const SYSTEM_PROMPT = `당신은 일학습병행제도 전문 상담 챗봇입니다.
 일학습병행제도, 일·학습병행, 기업현장교사, 훈련생 등록, 지원금, 자격취득 등 관련 질문에 친절하고 정확하게 답변해 주세요.
@@ -103,7 +103,7 @@
           const errMsg = data?.error?.message || '알 수 없는 오류';
           if (res.status === 429 || errMsg.toLowerCase().includes('quota') || errMsg.toLowerCase().includes('resource_exhausted')) {
             showQuotaWarning();
-            addMessage('bot', 'API 사용량 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.', true);
+            addMessage('bot', 'API 사용량 한도에 도달했습니다. 잠시 훈 다시 시도해 주세요.', true);
           } else if (res.status === 403) {
             addMessage('bot', `API 키 권한 오류입니다: ${errMsg}`, true);
           } else {
