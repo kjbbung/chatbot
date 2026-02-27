@@ -5,104 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>일학습병행 전문 상담 챗봇</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
     <style>
         body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; background-color: #f5f5f7; color: #111827; }
-        .markdown-body { font-size: 0.875rem; line-height: 1.6; }
-        .animate-bounce { animation: bounce 1s infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(-25%); } 50% { transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="importmap">
-    {
-        "imports": {
-            "react": "https://esm.sh/react@18",
-            "react-dom": "https://esm.sh/react-dom@18",
-            "react-dom/client": "https://esm.sh/react-dom@18/client",
-            "@google/genai": "https://esm.sh/@google/genai",
-            "lucide-react": "https://esm.sh/lucide-react?external=react",
-            "react-markdown": "https://esm.sh/react-markdown?external=react",
-            "framer-motion": "https://esm.sh/framer-motion?external=react,react-dom"
-        }
-    }
-    </script>
-    <script type="module">
-        import React, { useState, useRef, useEffect } from 'react';
-        import { createRoot } from 'react-dom/client';
-        import { GoogleGenAI } from "@google/genai";
-        import * as Lucide from 'lucide-react';
-        import ReactMarkdown from 'react-markdown';
-        import { motion, AnimatePresence } from 'framer-motion';
-        const { Send, Bot, User, Info, MessageSquare, ChevronRight, Sparkles, RotateCcw } = Lucide;
-
-        // Configuration
-        const GEMINI_API_KEY = "AIzaSyAgchrzk7ywmQtiD4tJwcKQdsOirLTyftQ";
-        const getSafeImageUrl = (name) => "./" + encodeURIComponent(name);
-        const BOT_PROFILE_IMAGE = getSafeImageUrl("이루미&해냄이(기본형).jpg");
-        const HEADER_LOGO_IMAGE = getSafeImageUrl("제주지사_귤.jpg");
+    <div class="flex flex-col h-screen max-w-2xl mx-auto bg-white shadow-xl">
+        <header class="p-4 border-b flex justify-between items-center bg-blue-600 text-white">
+            <h1 class="text-xl font-bold">일학습병행 상담 챗봇</h1>
+            <img src="./제주지사_%EA%B7%A4.jpg" class="w-10 h-10 rounded" onerror="this.style.display='none'">
+        </header>
+        <div id="chat" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <div class="flex justify-start">
+                <div class="max-w-[80%] p-3 rounded-lg bg-gray-100 text-sm">
+                    안녕하세요! 일학습병행 전문 상담 챗봇입니다. 무엇이든지 묻어보세요!
+                </div>
+            </div>
+        </div>
+        <div id="loading" class="hidden px-4 pb-2 text-gray-400 text-sm">답변 생성 중...</div>
+        <div class="p-4 border-t flex gap-2">
+            <input id="userInput" type="text" class="flex-1 border rounded p-2 text-sm" placeholder="질문을 입력하세요..." />
+            <button id="sendBtn" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">전송</button>
+        </div>
+    </div>
+    <script>
+        const GEMINI_API_KEY = 'AIzaSyAgchrzk7ywmQtiD4tJwcKQdsOirLTyftQ';
         const SYSTEM_INSTRUCTION = "당신은 '일학습병행' 제도 전문 상담 챗봇입니다. 제주지사 안내번호 064-729-0723을 답변 끝에 포함하세요.";
 
-        function App() {
-            const [messages, setMessages] = useState([]);
-            const [input, setInput] = useState('');
-            const [isLoading, setIsLoading] = useState(false);
-            const chatEndRef = useRef(null);
+        const chat = document.getElementById('chat');
+        const input = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const loading = document.getElementById('loading');
 
-            const handleSend = async (text = input) => {
-                if (!text.trim() || isLoading) return;
-                const userMsg = { role: 'user', content: text };
-                setMessages(prev => [...prev, userMsg]);
-                setInput('');
-                setIsLoading(true);
-                try {
-                    const genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-                    const result = await genAI.models.generateContent({
-                        model: "gemini-1.5-flash",
-                        contents: SYSTEM_INSTRUCTION + "\n질문: " + text
-                    });
-                    const aiText = result.text;
-                    setMessages(prev => [...prev, { role: 'model', content: aiText }]);
-                } catch (e) {
-                    console.error(e);
-                    setMessages(prev => [...prev, { role: 'model', content: "API 오류가 발생했습니다. 키를 확인해 주세요." }]);
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-
-            useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-
-            return React.createElement('div', { className: 'flex flex-col h-screen max-w-2xl mx-auto bg-white shadow-xl' },
-                React.createElement('header', { className: 'p-4 border-b flex justify-between items-center bg-blue-600 text-white' },
-                    React.createElement('h1', { className: 'text-xl font-bold' }, '일학습병행 상담 챗봇'),
-                    React.createElement('img', { src: HEADER_LOGO_IMAGE, className: 'w-10 h-10 rounded' })
-                ),
-                React.createElement('div', { className: 'flex-1 overflow-y-auto p-4 space-y-4' },
-                    messages.map((m, i) => React.createElement('div', { key: i, className: `flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}` },
-                        React.createElement('div', { className: `max-w-[80%] p-3 rounded-lg ${m.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100'}` },
-                            React.createElement(ReactMarkdown, null, m.content)
-                        )
-                    )),
-                    isLoading && React.createElement('div', { className: 'text-gray-400' }, '답변 생성 중...'),
-                    React.createElement('div', { ref: chatEndRef })
-                ),
-                React.createElement('div', { className: 'p-4 border-t flex gap-2' },
-                    React.createElement('input', {
-                        className: 'flex-1 border rounded p-2',
-                        value: input,
-                        onChange: e => setInput(e.target.value),
-                        onKeyDown: e => e.key === 'Enter' && handleSend(),
-                        placeholder: '질문을 입력하세요...'
-                    }),
-                    React.createElement('button', { onClick: () => handleSend(), className: 'bg-blue-600 text-white p-2 rounded' }, React.createElement(Send, { size: 20 }))
-                )
-            );
+        function addMessage(text, isUser) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex ' + (isUser ? 'justify-end' : 'justify-start');
+            const bubble = document.createElement('div');
+            bubble.className = 'max-w-[80%] p-3 rounded-lg text-sm ' + (isUser ? 'bg-blue-500 text-white' : 'bg-gray-100');
+            bubble.innerText = text;
+            wrapper.appendChild(bubble);
+            chat.appendChild(wrapper);
+            chat.scrollTop = chat.scrollHeight;
         }
 
-        const root = createRoot(document.getElementById('root'));
-        root.render(React.createElement(App));
+        async function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+            addMessage(text, true);
+            input.value = '';
+            sendBtn.disabled = true;
+            loading.classList.remove('hidden');
+            try {
+                const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_API_KEY;
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        system_instruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+                        contents: [{ role: 'user', parts: [{ text: text }] }]
+                    })
+                });
+                const data = await res.json();
+                if (data.candidates && data.candidates[0]) {
+                    const aiText = data.candidates[0].content.parts[0].text;
+                    addMessage(aiText, false);
+                } else {
+                    addMessage('오류: ' + JSON.stringify(data), false);
+                }
+            } catch (e) {
+                addMessage('API 오류가 발생했습니다: ' + e.message, false);
+            } finally {
+                sendBtn.disabled = false;
+                loading.classList.add('hidden');
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
     </script>
 </body>
 </html>
