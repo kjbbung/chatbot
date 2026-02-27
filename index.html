@@ -35,7 +35,6 @@
         import * as Lucide from 'lucide-react';
         import ReactMarkdown from 'react-markdown';
         import { motion, AnimatePresence } from 'framer-motion';
-
         const { Send, Bot, User, Info, MessageSquare, ChevronRight, Sparkles, RotateCcw } = Lucide;
 
         // Configuration
@@ -43,7 +42,6 @@
         const getSafeImageUrl = (name) => "./" + encodeURIComponent(name);
         const BOT_PROFILE_IMAGE = getSafeImageUrl("이루미&해냄이(기본형).jpg");
         const HEADER_LOGO_IMAGE = getSafeImageUrl("제주지사_귤.jpg");
-
         const SYSTEM_INSTRUCTION = "당신은 '일학습병행' 제도 전문 상담 챗봇입니다. 제주지사 안내번호 064-729-0723을 답변 끝에 포함하세요.";
 
         function App() {
@@ -58,16 +56,16 @@
                 setMessages(prev => [...prev, userMsg]);
                 setInput('');
                 setIsLoading(true);
-
                 try {
-                    const genAI = new GoogleGenAI(GEMINI_API_KEY);
-                    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-                    const result = await model.generateContent(SYSTEM_INSTRUCTION + "
-
-질문: " + text);
-                    const aiText = result.response.text();
+                    const genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+                    const result = await genAI.models.generateContent({
+                        model: "gemini-1.5-flash",
+                        contents: SYSTEM_INSTRUCTION + "\n질문: " + text
+                    });
+                    const aiText = result.text;
                     setMessages(prev => [...prev, { role: 'model', content: aiText }]);
                 } catch (e) {
+                    console.error(e);
                     setMessages(prev => [...prev, { role: 'model', content: "API 오류가 발생했습니다. 키를 확인해 주세요." }]);
                 } finally {
                     setIsLoading(false);
