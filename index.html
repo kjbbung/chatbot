@@ -35,7 +35,7 @@ header img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; }
   </header>
   <div id="chat">
     <div class="msg-wrap bot">
-      <div class="bubble bot">안녕하세요! 일학습병행 전문 상담 챗봇입니다. 무엇이든지 마읍께 묻어보세요!</div>
+      <div class="bubble bot">안녕하세요! 일학습병행 전문 상담 챗봇입니다. 무엇이든지 마음껏 물어보세요!</div>
     </div>
   </div>
   <div id="loading">답변 생성 중...</div>
@@ -71,7 +71,7 @@ async function send() {
   btn.disabled = true;
   loadDiv.style.display = 'block';
   try {
-    var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + API_KEY;
+    var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + API_KEY;
     var res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
