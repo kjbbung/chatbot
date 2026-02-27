@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
     <style>
-        body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; background-color: #f5f5f7; color: #111827; }
+        body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; background-color: #f5f5f7; color: #111827; margin: 0; padding: 0; }
         .font-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
         .markdown-body { font-size: 0.875rem; line-height: 1.625; }
         .markdown-body p { margin-bottom: 0.75rem; }
@@ -18,20 +18,46 @@
         .markdown-body code { background-color: #f3f4f6; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
         @keyframes bounce { 0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); } 50% { transform: translateY(0); animation-timing-function: cubic-bezier(0,0,0.2,1); } }
         .animate-bounce { animation: bounce 1s infinite; }
+        #fallback-error { display: none; padding: 20px; text-align: center; color: #ef4444; }
     </style>
 </head>
 <body>
     <div id="root"></div>
+    <div id="fallback-error">
+        <p>챗봇을 불러오는 중 오류가 발생했습니다. 브라우저의 콘솔을 확인하거나 페이지를 새로고침해 주세요.</p>
+    </div>
+
     <script type="importmap">
-    { "imports": { "react": "https://esm.sh/react@19", "react-dom": "https://esm.sh/react-dom@19/client", "react-dom/client": "https://esm.sh/react-dom@19/client", "@google/genai": "https://esm.sh/@google/genai", "lucide-react": "https://esm.sh/lucide-react", "react-markdown": "https://esm.sh/react-markdown", "framer-motion": "https://esm.sh/framer-motion" } }
+    {
+        "imports": {
+            "react": "https://esm.sh/react@19?bundle",
+            "react-dom": "https://esm.sh/react-dom@19/client?bundle",
+            "react-dom/client": "https://esm.sh/react-dom@19/client?bundle",
+            "@google/genai": "https://esm.sh/@google/genai?bundle",
+            "lucide-react": "https://esm.sh/lucide-react?bundle&external=react",
+            "react-markdown": "https://esm.sh/react-markdown?bundle",
+            "framer-motion": "https://esm.sh/framer-motion?bundle"
+        }
+    }
     </script>
+
     <script type="module">
         import React, { useState, useRef, useEffect } from 'react';
         import { createRoot } from 'react-dom/client';
         import { GoogleGenAI } from "@google/genai";
-        import { Send, Bot, User, Info, MessageSquare, ChevronRight, Sparkles, RotateCcw } from 'lucide-react';
+        import * as Lucide from 'lucide-react';
         import Markdown from 'react-markdown';
         import { motion, AnimatePresence } from 'framer-motion';
+
+        // Set up Lucide components as constants to avoid destructuring issues from esm.sh bundle
+        const { Send, Bot, User, Info, MessageSquare, ChevronRight, Sparkles, RotateCcw } = Lucide;
+
+        // Error fallback
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Global error:', msg, error);
+            document.getElementById('fallback-error').style.display = 'block';
+            return false;
+        };
 
         // --- CONFIGURATION ---
         const GEMINI_API_KEY = "AIzaSyAgchrzk7ywmQtiD4tJwcKQdsOirLTyftQ";
@@ -39,7 +65,6 @@
         // --- IMAGE CONFIGURATION ---
         const getSafeImageUrl = (name) => {
             if (!name) return "";
-            // Special handling for GitHub Pages filenames
             return "./" + encodeURIComponent(name);
         };
 
@@ -231,7 +256,7 @@
                                                 ),
                                                 React.createElement('div', { className: `p-4 rounded-2xl shadow-sm ${m.role === 'user' ? 'bg-gray-800 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none'}` },
                                                     React.createElement('div', { className: "markdown-body" },
-                                                        React.createElement(Markdown, null, m.content)
+                                                        React.createElement(Markdown, { children: m.content })
                                                     )
                                                 )
                                             ),
@@ -300,8 +325,13 @@
             );
         }
 
-        const root = createRoot(document.getElementById('root'));
-        root.render(React.createElement(App));
+        try {
+            const root = createRoot(document.getElementById('root'));
+            root.render(React.createElement(App));
+        } catch (e) {
+            console.error('Render error:', e);
+            document.getElementById('fallback-error').style.display = 'block';
+        }
     </script>
 </body>
 </html>
