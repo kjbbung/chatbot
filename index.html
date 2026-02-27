@@ -44,7 +44,7 @@
     </div>
   </div>
   <script>
-    const API_KEY = 'AIzaSyAxXVR-9-ei7VWzczoG5WONgZGFvkLQSgU';
+    const API_KEY = 'AIzaSyAMtXVq2C5TaW8acBKzXtvqzNdBlDkrsEQ';
     const MODEL = 'gemini-2.5-flash';
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
     const SYSTEM_PROMPT = `당신은 일학습병행제도 전문 상담 챗봇입니다.
@@ -99,10 +99,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents,
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 2048
-            }
+            generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
           })
         });
         const data = await res.json();
