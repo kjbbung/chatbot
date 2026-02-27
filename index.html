@@ -1,89 +1,101 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>일학습병행 전문 상담 챗봇</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; background-color: #f5f5f7; color: #111827; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>일학습병행 전문 상담 챗봇</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Inter', sans-serif; background: #f5f5f7; color: #111827; }
+.container { display: flex; flex-direction: column; height: 100vh; max-width: 700px; margin: 0 auto; background: #fff; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+header { padding: 16px; background: #2563eb; color: #fff; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1d4ed8; }
+header h1 { font-size: 1.2rem; font-weight: 700; }
+header img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; }
+#chat { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.msg-wrap { display: flex; }
+.msg-wrap.user { justify-content: flex-end; }
+.msg-wrap.bot { justify-content: flex-start; }
+.bubble { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 0.875rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+.bubble.user { background: #2563eb; color: #fff; border-bottom-right-radius: 2px; }
+.bubble.bot { background: #f3f4f6; color: #111827; border-bottom-left-radius: 2px; }
+#loading { padding: 4px 16px 8px; color: #9ca3af; font-size: 0.8rem; display: none; }
+.input-area { padding: 12px 16px; border-top: 1px solid #e5e7eb; display: flex; gap: 8px; }
+#userInput { flex: 1; border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 12px; font-size: 0.875rem; outline: none; }
+#userInput:focus { border-color: #2563eb; }
+#sendBtn { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 0.875rem; cursor: pointer; }
+#sendBtn:hover { background: #1d4ed8; }
+#sendBtn:disabled { background: #93c5fd; cursor: not-allowed; }
+</style>
 </head>
 <body>
-    <div class="flex flex-col h-screen max-w-2xl mx-auto bg-white shadow-xl">
-        <header class="p-4 border-b flex justify-between items-center bg-blue-600 text-white">
-            <h1 class="text-xl font-bold">일학습병행 상담 챗봇</h1>
-            <img src="./제주지사_%EA%B7%A4.jpg" class="w-10 h-10 rounded" onerror="this.style.display='none'">
-        </header>
-        <div id="chat" class="flex-1 overflow-y-auto p-4 space-y-4">
-            <div class="flex justify-start">
-                <div class="max-w-[80%] p-3 rounded-lg bg-gray-100 text-sm">
-                    안녕하세요! 일학습병행 전문 상담 챗봇입니다. 무엇이든지 묻어보세요!
-                </div>
-            </div>
-        </div>
-        <div id="loading" class="hidden px-4 pb-2 text-gray-400 text-sm">답변 생성 중...</div>
-        <div class="p-4 border-t flex gap-2">
-            <input id="userInput" type="text" class="flex-1 border rounded p-2 text-sm" placeholder="질문을 입력하세요..." />
-            <button id="sendBtn" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">전송</button>
-        </div>
+<div class="container">
+  <header>
+    <h1>일학습병행 상담 챗봇</h1>
+    <img src="./제주지사_%EA%B7%A4.jpg" alt="logo" onerror="this.style.display='none'">
+  </header>
+  <div id="chat">
+    <div class="msg-wrap bot">
+      <div class="bubble bot">안녕하세요! 일학습병행 전문 상담 챗봇입니다. 무엇이든지 마읍께 묻어보세요!</div>
     </div>
-    <script>
-        const GEMINI_API_KEY = 'AIzaSyAgchrzk7ywmQtiD4tJwcKQdsOirLTyftQ';
-        const SYSTEM_INSTRUCTION = "당신은 '일학습병행' 제도 전문 상담 챗봇입니다. 제주지사 안내번호 064-729-0723을 답변 끝에 포함하세요.";
+  </div>
+  <div id="loading">답변 생성 중...</div>
+  <div class="input-area">
+    <input id="userInput" type="text" placeholder="질문을 입력하세요..." />
+    <button id="sendBtn">전송</button>
+  </div>
+</div>
+<script>
+var API_KEY = 'AIzaSyAgchrzk7ywmQtiD4tJwcKQdsOirLTyftQ';
+var SYS = "당신은 '일학습병행' 제도 전문 상담 챗봇입니다. 제주지사 안내번호 064-729-0723을 답변 끝에 포함하세요.";
+var chat = document.getElementById('chat');
+var inp = document.getElementById('userInput');
+var btn = document.getElementById('sendBtn');
+var loadDiv = document.getElementById('loading');
 
-        const chat = document.getElementById('chat');
-        const input = document.getElementById('userInput');
-        const sendBtn = document.getElementById('sendBtn');
-        const loading = document.getElementById('loading');
+function addMsg(text, isUser) {
+  var wrap = document.createElement('div');
+  wrap.className = 'msg-wrap ' + (isUser ? 'user' : 'bot');
+  var bubble = document.createElement('div');
+  bubble.className = 'bubble ' + (isUser ? 'user' : 'bot');
+  bubble.textContent = text;
+  wrap.appendChild(bubble);
+  chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+}
 
-        function addMessage(text, isUser) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'flex ' + (isUser ? 'justify-end' : 'justify-start');
-            const bubble = document.createElement('div');
-            bubble.className = 'max-w-[80%] p-3 rounded-lg text-sm ' + (isUser ? 'bg-blue-500 text-white' : 'bg-gray-100');
-            bubble.innerText = text;
-            wrapper.appendChild(bubble);
-            chat.appendChild(wrapper);
-            chat.scrollTop = chat.scrollHeight;
-        }
+async function send() {
+  var text = inp.value.trim();
+  if (!text) return;
+  addMsg(text, true);
+  inp.value = '';
+  btn.disabled = true;
+  loadDiv.style.display = 'block';
+  try {
+    var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + API_KEY;
+    var res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: SYS }] },
+        contents: [{ role: 'user', parts: [{ text: text }] }]
+      })
+    });
+    var data = await res.json();
+    if (data.candidates && data.candidates[0]) {
+      addMsg(data.candidates[0].content.parts[0].text, false);
+    } else {
+      addMsg('오류: ' + JSON.stringify(data), false);
+    }
+  } catch(e) {
+    addMsg('API 오류: ' + e.message, false);
+  } finally {
+    btn.disabled = false;
+    loadDiv.style.display = 'none';
+  }
+}
 
-        async function sendMessage() {
-            const text = input.value.trim();
-            if (!text) return;
-            addMessage(text, true);
-            input.value = '';
-            sendBtn.disabled = true;
-            loading.classList.remove('hidden');
-            try {
-                const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_API_KEY;
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        system_instruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-                        contents: [{ role: 'user', parts: [{ text: text }] }]
-                    })
-                });
-                const data = await res.json();
-                if (data.candidates && data.candidates[0]) {
-                    const aiText = data.candidates[0].content.parts[0].text;
-                    addMessage(aiText, false);
-                } else {
-                    addMessage('오류: ' + JSON.stringify(data), false);
-                }
-            } catch (e) {
-                addMessage('API 오류가 발생했습니다: ' + e.message, false);
-            } finally {
-                sendBtn.disabled = false;
-                loading.classList.add('hidden');
-            }
-        }
-
-        sendBtn.addEventListener('click', sendMessage);
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-    </script>
+btn.addEventListener('click', send);
+inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') send(); });
+</script>
 </body>
 </html>
