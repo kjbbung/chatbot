@@ -37,13 +37,19 @@
         const GEMINI_API_KEY = "AIzaSyAgchrzk7ywmQtiD4tJwcKQdsOirLTyftQ";
         
         // --- IMAGE CONFIGURATION ---
-        const BOT_PROFILE_IMAGE = "이루미&해넘이(기본형).jpg";
-        const HEADER_LOGO_IMAGE = "제주지사_귤.jpg";
+        const getSafeImageUrl = (name) => {
+            if (!name) return "";
+            // Special handling for GitHub Pages filenames
+            return "./" + encodeURIComponent(name);
+        };
+
+        const BOT_PROFILE_IMAGE = getSafeImageUrl("이루미&해넘이(기본형).jpg");
+        const HEADER_LOGO_IMAGE = getSafeImageUrl("제주지사_귤.jpg");
         const RANDOM_IMAGES = [
             "감사합니다.jpg", "열공학습.jpg", "열일1.jpg", "열일2.jpg", 
             "이루미(기본형).jpg", "최고.jpg", "취업성공.jpg", "파이팅.jpg", 
             "학습.jpg", "해넘이(기본형).jpg"
-        ];
+        ].map(getSafeImageUrl);
 
         const SYSTEM_INSTRUCTION = `
 당신은 '일학습병행' 제도에 관한 전문 상담 챗봇입니다. 다음 자료들을 기반으로 사용자(기업 담당자 또는 학습근로자)의 질문에 답변하십시오:
@@ -85,7 +91,6 @@
                 if (!text.trim() || isLoading) return;
                 
                 const userMessage = { role: 'user', content: text };
-                // Get a random image for the response
                 const randomImg = RANDOM_IMAGES[Math.floor(Math.random() * RANDOM_IMAGES.length)];
                 
                 setMessages(prev => [...prev, userMessage]);
@@ -117,14 +122,20 @@
             return React.createElement('div', { className: "flex justify-center items-stretch min-h-screen p-4 md:p-6" },
                 React.createElement('div', { className: "flex flex-col w-full max-w-4xl gap-4 md:gap-6" },
                     React.createElement('header', { className: "flex flex-col gap-2 relative" },
-                        React.createElement('h1', { className: "text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2" },
-                            "일학습병행 전문 상담 챗봇",
-                            React.createElement(Sparkles, { className: "w-6 h-6 text-blue-600" })
-                        ),
-                        React.createElement('p', { className: "text-gray-600 text-sm md:text-base" }, "법·운영규정·최신 운영매뉴얼 기반으로 기업·학습근로자 질문에 답합니다."),
-                        // Top Right Logo Image
-                        React.createElement('div', { className: "absolute top-0 right-0 w-16 h-16 md:w-20 md:h-20" },
-                            React.createElement('img', { src: HEADER_LOGO_IMAGE, className: "w-full h-full object-contain rounded-lg", alt: "Logo" })
+                        React.createElement('div', { className: "flex flex-col md:flex-row md:items-center md:justify-between gap-4" },
+                            React.createElement('div', { className: "flex flex-col gap-2" },
+                                React.createElement('h1', { className: "text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2" },
+                                    "일학습병행 전문 상담 챗봇",
+                                    React.createElement(Sparkles, { className: "w-6 h-6 text-blue-600" })
+                                ),
+                                React.createElement('p', { className: "text-gray-600 text-sm md:text-base" }, "법·운영규정·최신 운영매뉴얼 기반으로 기업·학습근로자 질문에 답합니다.")
+                            ),
+                            // Header Logo in Top Right
+                            React.createElement('div', { className: "flex justify-end" },
+                                React.createElement('div', { className: "w-16 h-16 md:w-20 md:h-20 bg-white rounded-xl shadow-sm border border-gray-100 p-1 flex items-center justify-center overflow-hidden" },
+                                    React.createElement('img', { src: HEADER_LOGO_IMAGE, className: "max-w-full max-h-full object-contain", alt: "Logo" })
+                                )
+                            )
                         )
                     ),
                     React.createElement('section', { className: "bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-gray-200 flex flex-col gap-4" },
@@ -162,8 +173,7 @@
                     React.createElement('main', { className: "flex-1 flex flex-col bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden min-h-[500px]" },
                         React.createElement('div', { className: "px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between" },
                             React.createElement('div', { className: "flex items-center gap-3" },
-                                // Bot Profile Image replaces circle
-                                React.createElement('div', { className: "w-10 h-10 rounded-full overflow-hidden shadow-inner border border-gray-200" },
+                                React.createElement('div', { className: "w-10 h-10 rounded-full overflow-hidden shadow-inner border border-gray-200 bg-white" },
                                     React.createElement('img', { src: BOT_PROFILE_IMAGE, className: "w-full h-full object-cover", alt: "Bot" })
                                 ),
                                 React.createElement('div', null,
@@ -228,7 +238,7 @@
                         ),
                         isLoading && React.createElement('div', { className: "flex justify-start px-6 py-2" },
                             React.createElement('div', { className: "flex gap-3" },
-                                React.createElement('div', { className: "w-8 h-8 rounded-full overflow-hidden shadow-sm border border-gray-200" },
+                                React.createElement('div', { className: "w-8 h-8 rounded-full overflow-hidden shadow-sm border border-gray-200 bg-white" },
                                     React.createElement('img', { src: BOT_PROFILE_IMAGE, className: "w-full h-full object-cover" })
                                 ),
                                 React.createElement('div', { className: "p-4 bg-white border border-gray-100 rounded-2xl rounded-tl-none shadow-sm" },
