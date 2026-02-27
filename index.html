@@ -50,9 +50,13 @@
     const sendBtn = document.getElementById('sendBtn');
     const loading = document.getElementById('loading');
 
-    const SYSTEM_PROMPT = `당신은 대한민국 일학습병행제도 전문 상담 챗봇입니다.
-한국산업인력공단 제주지사 소속으로, 일학습병행 관련 질문에 친절하고 정확하게 답변합니다.
-답변은 항상 한국어로 하며, 전문적이고 친절한 어투를 사용합니다.`;
+    const SYSTEM_PROMPT = 당신은 한국산업인력공단 제주지사 소속 일학습병행 상담 챗봇입니다.
+답변 원칙:
+1. 핵심 키워드와 주제 위주로 간결하고 명확하게 답변합니다.
+2. 불필요한 서론이나 중복 설명은 피합니다.
+3. 복잡하거나 상세한 내용은 "한국산업인력공단 제주지사로 문의해 주세요 (064-720-3300)"로 안내합니다.
+4. 항목은 2-3개 이내로 제한합니다.
+5. 답변은 3-4문장 이내로 작성합니다.`;
 
     let conversationHistory = [];
 
