@@ -43,26 +43,21 @@
       <button id="sendBtn">전송</button>
     </div>
   </div>
-
   <script>
     const API_KEY = 'AIzaSyAxXVR-9-ei7VWzczoG5WONgZGFvkLQSgU';
-    const MODEL = 'gemini-2.0-flash-001';
+    const MODEL = 'gemini-1.5-flash';
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
-
     const SYSTEM_PROMPT = `당신은 일학습병행제도 전문 상담 챗봇입니다.
 일학습병행제도, 일·학습병행, 기업현장교사, 훈련생 등록, 지원금, 자격취득 등 관련 질문에 친절하고 정확하게 답변해 주세요.
 모든 답변은 한국어로 해주세요.`;
-
     const chatHistory = [];
     let quotaExceeded = false;
-
     function showQuotaWarning() {
       quotaExceeded = true;
       document.getElementById('quota-warning').style.display = 'block';
       document.getElementById('sendBtn').disabled = true;
       document.getElementById('userInput').disabled = true;
     }
-
     function addMessage(role, text, isError) {
       const chat = document.getElementById('chat');
       const wrap = document.createElement('div');
@@ -74,7 +69,6 @@
       chat.appendChild(wrap);
       chat.scrollTop = chat.scrollHeight;
     }
-
     async function sendMessage() {
       if (quotaExceeded) return;
       const input = document.getElementById('userInput');
@@ -82,20 +76,17 @@
       const loading = document.getElementById('loading');
       const text = input.value.trim();
       if (!text) return;
-
       addMessage('user', text, false);
       chatHistory.push({ role: 'user', parts: [{ text }] });
       input.value = '';
       btn.disabled = true;
       loading.style.display = 'block';
-
       try {
         const contents = [
           { role: 'user', parts: [{ text: SYSTEM_PROMPT }] },
           { role: 'model', parts: [{ text: '네, 일학습병행제도에 대해 친절하게 안내해 드리겠습니다.' }] },
           ...chatHistory
         ];
-
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -107,9 +98,7 @@
             }
           })
         });
-
         const data = await res.json();
-
         if (!res.ok) {
           const errMsg = data?.error?.message || '알 수 없는 오류';
           if (res.status === 429 || errMsg.toLowerCase().includes('quota') || errMsg.toLowerCase().includes('resource_exhausted')) {
@@ -123,11 +112,9 @@
           chatHistory.pop();
           return;
         }
-
         const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 받지 못했습니다.';
         chatHistory.push({ role: 'model', parts: [{ text: reply }] });
         addMessage('bot', reply, false);
-
       } catch (e) {
         addMessage('bot', `네트워크 오류: ${e.message}`, true);
         chatHistory.pop();
@@ -137,12 +124,10 @@
         input.focus();
       }
     }
-
     document.getElementById('sendBtn').addEventListener('click', sendMessage);
     document.getElementById('userInput').addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     });
-
     window.addEventListener('load', function() {
       addMessage('bot', '안녕하세요! 일학습병행제도 전문 상담 챗봇입니다. 궁금한 점을 마음껏 물어보세요!', false);
     });
