@@ -19,13 +19,21 @@
     .bubble.user { background: #2563eb; color: #fff; border-bottom-right-radius: 2px; }
     .bubble.bot { background: #f3f4f6; color: #111827; border-bottom-left-radius: 2px; }
     .bubble.error { background: #fee2e2; color: #b91c1c; border-bottom-left-radius: 2px; }
+    .bubble a { color: #2563eb; text-decoration: underline; word-break: break-all; }
+    .bubble.user a { color: #bfdbfe; }
     #loading { padding: 4px 16px 8px; color: #9ca3af; font-size: 0.8rem; display: none; }
     .input-area { padding: 12px 16px; border-top: 1px solid #e5e7eb; display: flex; gap: 8px; }
-    #userInput { flex: 1; border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 12px; font-size: 0.875rem; outline: none; }
+    #userInput { flex: 1; border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 12px; font-size: 0.875rem; outline: none; min-width: 0; }
     #userInput:focus { border-color: #2563eb; }
-    #sendBtn { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 0.875rem; cursor: pointer; }
+    #sendBtn { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 0.875rem; cursor: pointer; white-space: nowrap; }
     #sendBtn:hover { background: #1d4ed8; }
     #sendBtn:disabled { background: #93c5fd; cursor: not-allowed; }
+    @media (max-width: 480px) {
+      header h1 { font-size: 1rem; }
+      .bubble { max-width: 90%; font-size: 0.813rem; }
+      .input-area { padding: 8px 12px; }
+      #sendBtn { padding: 8px 14px; font-size: 0.813rem; }
+    }
   </style>
 </head>
 <body>
@@ -53,44 +61,56 @@
 2. 항목이 필요하면 2개만 작성합니다.
 3. 키워드 중심으로 간결하게 답변합니다.
 4. 복잡한 내용은 '자세한 사항은 한국산업인력공단 제주지사 (064-729-0723)로 문의해 주세요'로 마무리합니다.
-
 [기업 지원 안내 - 사용자가 기업 지원에 대해 질문할 경우 아래 내용을 바탕으로 답변합니다]
 일학습병행에 참여하는 기업은 비용지원과 비금전적 지원을 함께 받을 수 있습니다.
-
 1. 비용지원
 훈련기간, 훈련인원, 훈련방식에 따라 지원 비용에 차이가 생깁니다.
 자세한 비용은 수당계산기(https://kjbbung.github.io/calculator-worklearning/)로 확인해보세요.
-
 2. 비금전적(비용 외) 지원
 일학습병행 학습기업에 대한 기관별 가점·우대 혜택은 다음과 같습니다.
-
 ▶ 병무청
 - 산업기능요원 지정 인원 배정: 일학습병행 참여자와 일반 신규채용자가 포함된 훈련과정을 인정받은 기업의 경우 산업기능요원 지정 인원을 배정
 - 병역지정업체 선정평가 시 가점 부여: 병역지정업체 선정평가 시 일학습병행 참여 실적 등에 대해 가점 부여
 - 청년친화 강소기업 선정 시 가점 부여: 청년친화 강소기업 선정평가 시 일학습병행 참여 실적 등에 대해 가점 부여
-
 ▶ 조달청
 - 품질보증조달물자 지정 심사 시 가점: 일학습병행 참여 기업이 품질보증조달물자 심사를 받을 때 가점 부여
-
 ▶ 고용노동부
 - Best HRD 선정평가 시 가점: 인적자원개발 우수기관(Best HRD) 선정 시 일학습병행 참여 실적을 평가에 반영하여 가점 부여
 - 청년친화 강소기업 선정평가 우대: 청년친화 강소기업 선정평가에서 일학습병행 참여 기업을 우대
-
 ▶ 교육부
 - 산학일체형 도제학교(또는 현장실습) 참여 우대: 직업계고 산학일체형 도제학교, 현장실습 운영기업 선정 시 일학습병행 운영 기업을 우대
-
 ▶ 안전보건공단
 - 청년층 산업재해 예방을 위한 지원 대상 선정 시 가점: 청년층 산업재해 예방 지원사업의 지원대상 기업 선정 평가에서 일학습병행 참여 기업에 가점 부여
-
 ▶ (사)한국산업기술진흥협회·기업협회 등
 - 산업계 인력·R&D 관련 각종 사업 공모 시 우선지원 또는 우대: 인력양성, 연구개발 관련 지원사업에서 일학습병행 운영 기업에 우선지원 또는 평가 우대`;
     let conversationHistory = [];
+
+    function linkify(text) {
+      const urlRegex = /(https?:\/\/[^\s)]+)/g;
+      const parts = text.split(urlRegex);
+      const span = document.createElement('span');
+      parts.forEach((part, i) => {
+        if (urlRegex.test(part)) {
+          const a = document.createElement('a');
+          a.href = part;
+          a.textContent = part;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          span.appendChild(a);
+        } else {
+          span.appendChild(document.createTextNode(part));
+        }
+        urlRegex.lastIndex = 0;
+      });
+      return span;
+    }
+
     function addMessage(text, role) {
       const wrap = document.createElement('div');
       wrap.className = `msg-wrap ${role}`;
       const bubble = document.createElement('div');
       bubble.className = `bubble ${role === 'error' ? 'error' : role}`;
-      bubble.textContent = text;
+      bubble.appendChild(linkify(text));
       wrap.appendChild(bubble);
       chat.appendChild(wrap);
       chat.scrollTop = chat.scrollHeight;
@@ -133,7 +153,6 @@
         sendMessage();
       }
     });
-    // 시작 메시지
     addMessage('안녕하세요! 일학습병행 전문 상담 챗봇입니다. 일학습병행제도에 관한 궁금한 사항을 편하게 질문해 주세요.', 'bot');
   </script>
 </body>
