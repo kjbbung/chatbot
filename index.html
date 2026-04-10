@@ -158,8 +158,13 @@
       conversationHistory.push({ role: 'model', parts: [{ text: botText }] });
       addMessage(botText, 'bot');
     } catch (err) {
-      addMessage('오류가 발생했습니다: ' + err.message, 'error');
-    } finally {
+      // 오류 메시지를 한국어로 표시하고, 재시도 안내 추가
+      const isHighDemandError = err.message && err.message.includes('high demand');
+      if (isHighDemandError) {
+        addMessage('일시적으로 접속이 많아 답변이 지연되고 있습니다. 잠시 후 다시 시도해주세요.', 'error');
+      } else {
+        addMessage('오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+      }    } finally {
       sendBtn.disabled = false;
       loading.style.display = 'none';
       userInput.focus();
